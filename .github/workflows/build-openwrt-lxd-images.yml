@@ -21,13 +21,13 @@ jobs:
           do
             if [ "${version:0:2}" -lt 20 ]; then
               json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
-#              unset json_versions
-#              json_versions=$modified_json_versions
+              unset json_versions
+              json_versions=$modified_json_versions
             elif git show-ref --tags --verify --quiet "refs/tags/${version}"; then
-              echo "Tag ${version} exists"
-               json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
-#              unset json_versions
-#              json_versions=$modified_json_versions
+              echo "Tag ${version} exists" 
+              modified_json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
+              unset json_versions
+              json_versions=$modified_json_versions
             else
               echo "Tag ${version} does not exist"
             fi;
