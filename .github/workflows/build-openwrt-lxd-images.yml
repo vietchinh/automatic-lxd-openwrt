@@ -22,7 +22,7 @@ jobs:
             do
               if git show-ref --tags --verify --quiet "refs/tags/${version}"; then
                 echo "Tag ${version} exists" 
-                echo "$json_versions" | jq -c "del(.${version}))"
+                echo "$json_versions" | jq -c 'del(."${version}"))'
                 echo $json_versions
               else
                 echo "Tag ${version} does not exist"
