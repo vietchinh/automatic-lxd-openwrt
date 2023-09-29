@@ -9,26 +9,29 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - id: set-matrix
-        run: |
-          #json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | | head -1 tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
-          echo "matrix={\"versions:\":[\"22.03.5\"]}" >> "$GITHUB_OUTPUT"
-
-  build-openwrt-lxd-images:
-    needs: matrix-setup
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
-    steps:
       - name: Checkout
         uses: actions/checkout@main
         with:
           fetch-depth: 0
-      - name: Check for Tag
+      - id: set-matrix
         run: |
-          TAG=$(echo ${{ matrix.versions }})
-          if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
-            echo "Tag ${TAG} exists"
-          else
-            echo "Tag ${TAG} does not exist"
-          fi
+          #json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | | head -1 tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
+          json_versions="{\"versions:\":[\"22.03.5\"]}"
+          echo "$json_versions" | jq -r '.[]' | while read -r repo; do echo "do something with $repo"; done
+#          echo "matrix={\"versions:\":[\"22.03.5\"]}" >> "$GITHUB_OUTPUT"
+#
+#  build-openwrt-lxd-images:
+#    needs: matrix-setup
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
+#    steps:
+#
+#      - name: Check for Tag
+#        run: |
+#          TAG=echo ${{ matrix.versions }}
+#          if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
+#            echo "Tag ${TAG} exists"
+#          else
+#            echo "Tag ${TAG} does not exist"
+#          fi
