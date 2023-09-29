@@ -11,7 +11,7 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0') | (echo {\"versions\":[ && cat && echo ]}) | jq .)
+          json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0') | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
           echo "matrix=$(sed -r 's/"/\\"/g' <<< $json_versions)" >> "$GITHUB_OUTPUT"
 
   build-openwrt-lxd-images:
