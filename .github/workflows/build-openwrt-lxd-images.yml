@@ -16,8 +16,7 @@ jobs:
       - id: set-matrix
         run: |
           json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0'| tr -d /) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
-          versions=$(echo "$json_versions" | jq -r '.versions[]')
-          for version in $versions; 
+          for version in $(echo "$json_versions" | jq -r '.versions[]'); 
           do
             if [ "${version:0:2}" -lt 20 ]; then
               json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
