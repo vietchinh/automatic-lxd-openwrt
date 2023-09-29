@@ -26,7 +26,7 @@ jobs:
                 echo "Tag ${version} does not exist"
               fi;
             done;
-          echo "matrix=$json_versions" >> "$GITHUB_OUTPUT"
+          echo "matrix=$json_versions" >> $GITHUB_OUTPUT
 
   build-openwrt-lxd-images:
     needs: matrix-setup
@@ -44,6 +44,13 @@ jobs:
           repository: mikma/lxd-openwrt
           path: lxd-openwrt
           ref: master
-      - name: Build openwrt lxd image
+      - name: Build openwrt LXD image
         working-directory: lxd-openwrt
-        run: ./build.sh -a x86_64 -v ${{ matrix.versions }}
+        id: imagebuilder
+        run: | 
+          ./build.sh -a x86_64 -v ${{ matrix.versions }}
+          echo "IMAGE_PATH=bin/openwrt-${{ matrix.versions }}-x86-64-lxd.tar.gz" >> $GITHUB_OUTPUT
+      - name: Upload openwrt LXD image
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: gh release create ${{ matrix.versions }} ${{ steps.imagebuilder.outputs.IMAGE_PATH }} -t ${{ matrix.versions }} -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
