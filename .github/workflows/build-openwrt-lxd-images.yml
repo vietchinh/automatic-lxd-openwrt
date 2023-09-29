@@ -21,8 +21,8 @@ jobs:
             while read -r version; 
             do
               if git show-ref --tags --verify --quiet "refs/tags/${version}"; then
-                echo "Tag ${version} exists" \
-                jq del(.Array[${version}])
+                echo "Tag ${version} exists" 
+                json_versions=$(echo "$json_versions" | jq -c 'del(.versions[] | select(.== "${version}"))')
               else
                 echo "Tag ${version} does not exist"
               fi;
