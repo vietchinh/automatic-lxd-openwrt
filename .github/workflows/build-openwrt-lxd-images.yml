@@ -11,11 +11,11 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          echo "json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0') | (echo {\"versions\":[ && cat && echo ]}) | jq .)" >> "$GITHUB_ENV"
+          echo "matrix=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0') | (echo {\"versions\":[ && cat && echo ]}) | jq .)" >> "$GITHUB_ENV"
 
   build-openwrt-lxd-images:
     runs-on: ubuntu-22.04
     strategy:
-      matrix: ${{fromJson($json_versions)}}
+      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
     steps:
       - run: echo ${{ matrix.versions }}
