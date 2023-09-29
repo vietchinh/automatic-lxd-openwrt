@@ -16,19 +16,20 @@ jobs:
       - id: set-matrix
         run: |
           json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0'| tr -d /) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
+          new_json_versions=$json_versions
           echo "$json_versions" | jq -r '.versions[]' | 
             while read -r version; 
             do
               if [ "${version:0:2}" -lt 20 ]; then
-                json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
+                new_json_versions=$(echo "$new_json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
               elif git show-ref --tags --verify --quiet "refs/tags/${version}"; then
                 echo "Tag ${version} exists" 
-                json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
+                new_json_versions=$(echo "$new_json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
               else
                 echo "Tag ${version} does not exist"
               fi;
             done;
-          echo "matrix=$json_versions" >> $GITHUB_OUTPUT
+          echo "matrix=$new_json_versions" >> $GITHUB_OUTPUT
 
   build-openwrt-lxd-images:
     needs: matrix-setup
