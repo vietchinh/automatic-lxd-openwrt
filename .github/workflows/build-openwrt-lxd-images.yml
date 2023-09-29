@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
       - id: set-matrix
         run: |
-          json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+"|"\d+.\d+.\d+-rc\d"' | tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
+          json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
           echo "$json_versions" | jq -r '.versions[]' | 
             while read -r version; 
             do
