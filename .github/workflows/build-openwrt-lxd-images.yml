@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@main
         with:
           repository: mikma/lxd-openwrt
-          path: ./
+          path: lxd-openwrt
           ref: master
       - name: Build openwrt lxd image
         working-directory: lxd-openwrt
