@@ -17,5 +17,7 @@ jobs:
   build-openwrt-lxd-images:
     needs: matrix-setup
     runs-on: ubuntu-22.04
+    strategy:
+      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
     steps:
-      - run: echo ${{ needs.matrix-setup.outputs.matrix }}
+      - run: echo ${{ matrix.versions }}
