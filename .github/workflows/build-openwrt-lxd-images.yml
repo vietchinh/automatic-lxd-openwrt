@@ -10,7 +10,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@latest
+        uses: actions/checkout@main
         with:
           fetch-depth: 0
       - id: set-matrix
@@ -39,7 +39,7 @@ jobs:
           packages: fakeroot
           version: 1.0
       - name: Clone lxd-openwrt repository
-        uses: actions/checkout@latest
+        uses: actions/checkout@main
         with:
           repository: mikma/lxd-openwrt
           path: ./
