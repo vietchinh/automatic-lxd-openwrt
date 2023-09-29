@@ -10,7 +10,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@main
+        uses: actions/checkout@latest
         with:
           fetch-depth: 0
       - id: set-matrix
@@ -27,20 +27,24 @@ jobs:
               fi;
             done;
 
-#          echo "matrix={\"versions:\":[\"22.03.5\"]}" >> "$GITHUB_OUTPUT"
-#
-#  build-openwrt-lxd-images:
-#    needs: matrix-setup
-#    runs-on: ubuntu-22.04
-#    strategy:
-#      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
-#    steps:
-#
-#      - name: Check for Tag
-#        run: |
-#          TAG=echo ${{ matrix.versions }}
-#          if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
-#            echo "Tag ${TAG} exists"
-#          else
-#            echo "Tag ${TAG} does not exist"
-#          fi
+         echo "matrix=$json_versions" >> "$GITHUB_OUTPUT"
+
+  build-openwrt-lxd-images:
+    needs: matrix-setup
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
+    steps:
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: fakeroot
+          version: 1.0
+      - name: Clone lxd-openwrt repository
+        uses: actions/checkout@latest
+        with:
+          repository: mikma/lxd-openwrt
+          path: ./
+          ref: master
+      - name: Build openwrt lxd image
+        working-directory: ./lxd-openwrt
+        run: ./build.sh
