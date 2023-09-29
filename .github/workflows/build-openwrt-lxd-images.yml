@@ -17,8 +17,7 @@ jobs:
         run: |
           json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0'| tr -d /) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
           versions=$(echo "$json_versions" | jq -r '.versions[]')
-          echo $version
-          for version in versions; 
+          for version in $versions; 
           do
             if [ "${version:0:2}" -lt 20 ]; then
               modified_json_versions=$(echo "json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
