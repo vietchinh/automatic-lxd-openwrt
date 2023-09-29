@@ -17,7 +17,7 @@ jobs:
         run: |
           #json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
           json_versions={\"versions:\":[\"22.03.5/\"]}
-          echo $(jq -c "$json_versions")
+          echo $(jq {\"versions:\":[\"22.03.5/\"]})
           #echo "$json_versions" | jq -r '.versions[]' | while read -r repo; do echo "do something with $repo"; done
 #          echo "matrix={\"versions:\":[\"22.03.5\"]}" >> "$GITHUB_OUTPUT"
 #
