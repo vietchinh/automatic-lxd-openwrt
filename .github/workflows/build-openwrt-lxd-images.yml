@@ -20,4 +20,15 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
     steps:
-      - run: echo ${{ matrix.versions }}
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check for Tag
+        run: |
+          if git show-ref --tags --verify --quiet "refs/tags/${matrix.versions}"; then
+            echo "Tag ${matrix.versions} exists"
+          else
+            echo "Tag ${matrix.versions} does not exist"
+          fi
