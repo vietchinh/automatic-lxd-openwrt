@@ -21,12 +21,12 @@ jobs:
       matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
         with:
           fetch-depth: 0
       - name: Check for Tag
         run: |
-          TAG=${{ matrix.versions }}
+          TAG=$(echo ${{ matrix.versions }})
           if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
             echo "Tag ${TAG} exists"
           else
