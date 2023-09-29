@@ -45,5 +45,5 @@ jobs:
           path: ./
           ref: master
       - name: Build openwrt lxd image
-        working-directory: ./lxd-openwrt
+        working-directory: lxd-openwrt
         run: ./build.sh
