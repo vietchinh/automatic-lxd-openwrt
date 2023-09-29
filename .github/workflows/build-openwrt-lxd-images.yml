@@ -18,4 +18,4 @@ jobs:
     needs: matrix-setup
     runs-on: ubuntu-22.04
     steps:
-      - run: echo ${{ needs.set-matrix.outputs.matrix) }}
+      - run: echo ${{ needs.set-matrix.outputs.matrix }}
