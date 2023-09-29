@@ -26,8 +26,7 @@ jobs:
                 echo "Tag ${version} does not exist"
               fi;
             done;
-
-         echo "matrix=$json_versions" >> "$GITHUB_OUTPUT"
+          echo "matrix=$json_versions" >> "$GITHUB_OUTPUT"
 
   build-openwrt-lxd-images:
     needs: matrix-setup
