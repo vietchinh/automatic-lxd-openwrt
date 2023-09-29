@@ -21,9 +21,12 @@ jobs:
             do
               if [ "${version:0:2}" -lt 20 ]; then
                 new_json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
+                echo $new_json_versions
                 unset json_versions
                 json_versions=$new_json_versions
+                echo $json_versions
                 unset new_json_versions
+                echo $new_json_versions
               elif git show-ref --tags --verify --quiet "refs/tags/${version}"; then
                 echo "Tag ${version} exists" 
                 new_json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
