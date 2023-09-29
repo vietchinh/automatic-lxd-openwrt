@@ -15,47 +15,45 @@ jobs:
           fetch-depth: 0
       - id: set-matrix
         run: |
-          #json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
-          json_versions={\"versions\":[\"22.03.4\"]}
+          json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0' ) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
           echo "$json_versions" | jq -r '.versions[]' | 
             while read -r version; 
             do
               if git show-ref --tags --verify --quiet "refs/tags/${version}"; then
                 echo "Tag ${version} exists" 
                 json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
-                echo $json_versions
               else
                 echo "Tag ${version} does not exist"
               fi;
             done;
           echo "matrix=$json_versions" >> $GITHUB_OUTPUT
 
-#  build-openwrt-lxd-images:
-#    needs: matrix-setup
-#    runs-on: ubuntu-22.04
-#    permissions:
-#      contents: write
-#    strategy:
-#      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
-#    steps:
-#      - uses: awalsh128/cache-apt-pkgs-action@latest
-#        with:
-#          packages: fakeroot
-#          version: 1.0
-#      - name: Clone lxd-openwrt repository
-#        uses: actions/checkout@main
-#        with:
-#          repository: mikma/lxd-openwrt
-#          path: lxd-openwrt
-#          ref: master
-#      - name: Build openwrt LXD image
-#        working-directory: lxd-openwrt
-#        id: imagebuilder
-#        run: |
-#          ./build.sh -a x86_64 -v ${{ matrix.versions }}
-#          echo "IMAGE_PATH=bin/openwrt-${{ matrix.versions }}-x86-64-lxd.tar.gz" >> $GITHUB_OUTPUT
-#      - name: Upload openwrt LXD image
-#        working-directory: lxd-openwrt
-#        env:
-#          GITHUB_TOKEN: ${{ github.token }}
-#        run: gh release create ${{ matrix.versions }} ${{ steps.imagebuilder.outputs.IMAGE_PATH }} -t ${{ matrix.versions }} -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
+  build-openwrt-lxd-images:
+    needs: matrix-setup
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    strategy:
+      matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
+    steps:
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: fakeroot
+          version: 1.0
+      - name: Clone lxd-openwrt repository
+        uses: actions/checkout@main
+        with:
+          repository: mikma/lxd-openwrt
+          path: lxd-openwrt
+          ref: master
+      - name: Build openwrt LXD image
+        working-directory: lxd-openwrt
+        id: imagebuilder
+        run: |
+          ./build.sh -a x86_64 -v ${{ matrix.versions }}
+          echo "IMAGE_PATH=bin/openwrt-${{ matrix.versions }}-x86-64-lxd.tar.gz" >> $GITHUB_OUTPUT
+      - name: Upload openwrt LXD image
+        working-directory: lxd-openwrt
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: gh release create ${{ matrix.versions }} ${{ steps.imagebuilder.outputs.IMAGE_PATH }} -t ${{ matrix.versions }} -R ${{ github.repository_owner }}/${{ github.event.repository.name }}
