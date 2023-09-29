@@ -16,6 +16,7 @@ jobs:
           echo "matrix=$json_versions" >> "$GITHUB_OUTPUT"
 
   build-openwrt-lxd-images:
+    needs: matrix-setup
     runs-on: ubuntu-22.04
     strategy:
       matrix: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
