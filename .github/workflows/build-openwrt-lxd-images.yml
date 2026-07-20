@@ -79,11 +79,12 @@ jobs:
         id: lxd_ref
         run: |
           ver="${{ matrix.version }}"
-          major="$(echo "$ver" | cut -d. -f1)"
-          if [ "$major" -ge 26 ] || { [ "$major" -eq 25 ] && [ "$(echo "$ver" | cut -d. -f2)" -ge 12 ]; }; then
-            echo "ref=master" >> "$GITHUB_OUTPUT"      # apk-based (25.12+)
+          major=${ver%%.*}
+          
+          if (( major >= 25 )); then
+              echo "ref=master" >> "$GITHUB_OUTPUT"
           else
-            echo "ref=28e0c7f0cb1e37d3762e219ac927b677d4e0def8" >> "$GITHUB_OUTPUT"  # opkg-based (24.10 and earlier)
+              echo "ref=28e0c7f0cb1e37d3762e219ac927b677d4e0def8" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Checkout lxd-openwrt
