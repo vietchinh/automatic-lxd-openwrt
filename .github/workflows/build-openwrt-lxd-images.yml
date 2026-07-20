@@ -78,7 +78,7 @@ jobs:
       - name: Determine compatible lxd-openwrt ref
         id: lxd_ref
         run: |
-          ver="${{ matrix.version }}"
+          ver="${{ matrix.versions }}"
           major=${ver%%.*}
           
           if (( major >= 25 )); then
