@@ -50,6 +50,22 @@ jobs:
           repository: mikma/lxd-openwrt
           path: lxd-openwrt
           ref: master
+      - name: Apply rootfs-download fix
+        working-directory: lxd-openwrt
+        run: |
+          cat << 'PATCH' | git apply -
+          --- a/build.sh
+          +++ b/build.sh
+          @@ -122,7 +122,7 @@
+           }
+           
+           download_rootfs() {
+          -	detect_url "rootfs\.tar"
+          +	detect_url "generic-targz-rootfs\.tar"
+           	local rootfs_url=$openwrt_url/$return
+           
+           	# global $rootfs
+          PATCH
       - name: Build openwrt LXD image
         working-directory: lxd-openwrt
         id: imagebuilder
