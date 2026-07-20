@@ -40,7 +40,7 @@ jobs:
                     fi
             
                     if [[ -n ${excluded[$version]} ]]; then
-                        echo "Skipping excluded version: $version" >&2
+                        echo "Excluding version: $version" >&2
                         continue
                     fi
             
