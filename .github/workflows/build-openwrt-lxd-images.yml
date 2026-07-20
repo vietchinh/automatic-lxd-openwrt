@@ -17,20 +17,46 @@ jobs:
           fetch-depth: 0
       - id: set-matrix
         run: |
-          json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0'| tr -d /) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
-          for version in $(echo "$json_versions" | jq -r '.versions[]'); do
-            if [ "${version:0:2}" -lt 20 ] || [[ " $EXCLUDED_VERSIONS " =~ " $version " ]]; then
-              json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
-            elif git show-ref --tags --verify --quiet "refs/tags/${version}"; then
-              echo "Tag ${version} exists"
-              json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
-            else
-              echo "Tag ${version} does not exist"
-            fi
-          done
-
-          echo $json_versions
-          echo "matrix=$json_versions" >> $GITHUB_OUTPUT
+            declare -A excluded tags
+            
+            for version in $EXCLUDED_VERSIONS; do
+                excluded["$version"]=1
+            done
+            
+            while read -r tag; do
+                tags["$tag"]=1
+            done < <(git tag)
+            
+            json_versions=$(
+            {
+                curl -fsSL https://downloads.openwrt.org/releases/ |
+                grep -Po '"\K\d+\.\d+\.\d+(?:-rc\d+)?(?=/")' |
+                while read -r version; do
+                    major=${version%%.*}
+            
+                    if (( major < 20 )); then
+                        echo "Skipping unsupported version: $version" >&2
+                        continue
+                    fi
+            
+                    if [[ -n ${excluded[$version]} ]]; then
+                        echo "Skipping excluded version: $version" >&2
+                        continue
+                    fi
+            
+                    if [[ -n ${tags[$version]} ]]; then
+                        echo "Tag already exists: $version" >&2
+                        continue
+                    fi
+            
+                    echo "New version found: $version" >&2
+                    printf '%s\n' "$version"
+                done
+            } | jq -Rsc '{versions: split("\n")[:-1]}'
+            )
+            
+            echo "$json_versions"
+            echo "matrix=$json_versions" >> "$GITHUB_OUTPUT"
 
   build-openwrt-lxd-images:
     needs: matrix-setup
