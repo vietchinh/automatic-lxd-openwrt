@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   matrix-setup:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       EXCLUDED_VERSIONS: "24.10.0-rc1 " #space seperated
     outputs:
@@ -60,7 +60,7 @@ jobs:
 
   build-openwrt-lxd-images:
     needs: matrix-setup
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     strategy:
