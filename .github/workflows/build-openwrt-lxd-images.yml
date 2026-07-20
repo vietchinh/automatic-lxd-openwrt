@@ -44,12 +44,44 @@ jobs:
         with:
           packages: fakeroot
           version: 1.0
-      - name: Clone lxd-openwrt repository
+      # OpenWrt 25.12 switched from opkg to apk as the package manager.
+      # mikma/lxd-openwrt's build_rootfs.sh was updated to match (commit 572872a),
+      # which dropped support for building opkg-based (24.10.x and earlier) images.
+      # Pick the right lxd-openwrt commit based on the OpenWrt version being built.
+      - name: Determine compatible lxd-openwrt ref
+        id: lxd_ref
+        run: |
+          ver="${{ matrix.version }}"
+          major="$(echo "$ver" | cut -d. -f1)"
+          if [ "$major" -ge 26 ] || { [ "$major" -eq 25 ] && [ "$(echo "$ver" | cut -d. -f2)" -ge 12 ]; }; then
+            echo "ref=master" >> "$GITHUB_OUTPUT"      # apk-based (25.12+)
+          else
+            echo "ref=28e0c7f0cb1e37d3762e219ac927b677d4e0def8" >> "$GITHUB_OUTPUT"  # opkg-based (24.10 and earlier)
+          fi
+
+      - name: Checkout lxd-openwrt
         uses: actions/checkout@main
         with:
           repository: mikma/lxd-openwrt
           path: lxd-openwrt
-          ref: master
+          ref: ${{ steps.lxd_ref.outputs.ref }}
+
+      - name: Apply rootfs-download fix
+        working-directory: lxd-openwrt
+        run: |
+          cat << 'PATCH' | git apply -
+          --- a/build.sh
+          +++ b/build.sh
+          @@ -122,7 +122,7 @@
+           }
+           
+           download_rootfs() {
+          -	detect_url "rootfs\.tar"
+          +	detect_url "${ver}-${arch}-${subarch}-rootfs\.tar\.gz"
+           	local rootfs_url=$openwrt_url/$return
+           
+           	# global $rootfs
+          PATCH
       - name: Build openwrt LXD image
         working-directory: lxd-openwrt
         id: imagebuilder
