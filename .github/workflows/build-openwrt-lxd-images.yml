@@ -60,7 +60,7 @@ jobs:
 
   build-openwrt-lxd-images:
     needs: matrix-setup
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     strategy:
@@ -86,14 +86,12 @@ jobs:
           else
               echo "ref=28e0c7f0cb1e37d3762e219ac927b677d4e0def8" >> "$GITHUB_OUTPUT"
           fi
-
       - name: Checkout lxd-openwrt
         uses: actions/checkout@main
         with:
           repository: mikma/lxd-openwrt
           path: lxd-openwrt
           ref: ${{ steps.lxd_ref.outputs.ref }}
-
       - name: Apply rootfs-download fix
         working-directory: lxd-openwrt
         run: |
@@ -110,6 +108,8 @@ jobs:
            
            	# global $rootfs
           PATCH
+      - name: Allow unprivileged user namespaces (needed by apk post-install scripts)
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Build openwrt LXD image
         working-directory: lxd-openwrt
         id: imagebuilder
