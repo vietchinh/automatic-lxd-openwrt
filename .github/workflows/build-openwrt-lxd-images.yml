@@ -6,6 +6,8 @@ on:
 jobs:
   matrix-setup:
     runs-on: ubuntu-22.04
+    env:
+      EXCLUDED_VERSIONS: "24.10.0-rc1 " #space seperated
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -16,17 +18,16 @@ jobs:
       - id: set-matrix
         run: |
           json_versions=$(sed -r 's/""/","/g' <<< $(curl https://downloads.openwrt.org/releases/ |  grep -zPo -- '"\d+.\d+.\d+\/"|"\d+.\d+.\d+-rc\d\/"' | tr -d '\0'| tr -d /) | (echo {\"versions\":[ && cat && echo ]}) | jq -c .)
-          for version in $(echo "$json_versions" | jq -r '.versions[]'); 
-          do
-            if [ "${version:0:2}" -lt 20 ]; then
+          for version in $(echo "$json_versions" | jq -r '.versions[]'); do
+            if [ "${version:0:2}" -lt 20 ] || [[ " $EXCLUDED_VERSIONS " =~ " $version " ]]; then
               json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
             elif git show-ref --tags --verify --quiet "refs/tags/${version}"; then
-              echo "Tag ${version} exists" 
+              echo "Tag ${version} exists"
               json_versions=$(echo "$json_versions" | jq -c "del(.versions[] | select(.== \"$version\"))")
             else
               echo "Tag ${version} does not exist"
-            fi;
-          done;
+            fi
+          done
 
           echo $json_versions
           echo "matrix=$json_versions" >> $GITHUB_OUTPUT
