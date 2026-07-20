@@ -61,7 +61,7 @@ jobs:
            
            download_rootfs() {
           -	detect_url "rootfs\.tar"
-          +	detect_url "generic-targz-rootfs\.tar"
+          +	detect_url "${ver}-${arch}-${subarch}-rootfs\.tar\.gz"
            	local rootfs_url=$openwrt_url/$return
            
            	# global $rootfs
